@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+
+    <changeSet id="1"  author="Truong Xuan Giang">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <not>
+                    <tableExists tableName="user"/>
+                </not>
+                <not>
+                    <tableExists tableName="pitch_type"/>
+                </not>
+                <not>
+                    <tableExists tableName="pitch"/>
+                </not>
+                <not>
+                    <tableExists tableName="image"/>
+                </not>
+                <not>
+                    <tableExists tableName="time_slot"/>
+                </not>
+                <not>
+                    <tableExists tableName="pitch_time_slot"/>
+                </not>
+                <not>
+                    <tableExists tableName="pitch_booking"/>
+                </not>
+                <not>
+                    <tableExists tableName="bill"/>
+                </not>
+                <not>
+                    <tableExists tableName="comment"/>
+                </not>
+            </and>
+        </preConditions>
+        <createTable tableName="user">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="fullname" type="varchar(125)"/>
+            <column name="email" type="varchar(125)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password" type="varchar(255)"/>
+            <column name="phone_number" type="varchar(15)"/>
+            <column name="address" type="varchar(255)"/>
+            <column name="avatar" type="varchar(255)"/>
+            <column name="role" type="varchar(45)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="create_at" type="timestamp"/>
+            <column name="update_at" type="timestamp"/>
+        </createTable>
+
+        <createTable tableName="pitch_type">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(125)"/>
+        </createTable>
+        <createTable tableName="pitch">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(125)"/>
+            <column name="address" type="varchar(255)"/>
+            <column name="create_at" type="timestamp"/>
+            <column name="update_at" type="timestamp"/>
+            <column name="pitch_type_id" type="bigint"/>
+        </createTable>
+        <addForeignKeyConstraint
+                baseTableName="pitch"
+                baseColumnNames="pitch_type_id"
+                constraintName="fk_pitch_type_pitch"
+                referencedTableName="pitch_type"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+        />
+
+        <createTable tableName="image">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(125)"/>
+            <column name="pitch_id" type="bigint" />
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="image"
+                baseColumnNames="pitch_id"
+                constraintName="fk_pitch_image"
+                referencedTableName="pitch"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+        />
+
+        <createTable tableName="time_slot">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="start_time" type="time"/>
+            <column name="end_time" type="time"/>
+        </createTable>
+
+        <createTable tableName="pitch_time">
+            <column name="price" type="int"/>
+            <column name="status" type="varchar(255)"/>
+            <column name="pitch_id" type="bigint"/>
+            <column name="time_slot_id" type="bigint"/>
+        </createTable>
+
+        <addPrimaryKey tableName="pitch_time" columnNames="pitch_id, time_slot_id" constraintName="pk_pitch_time_slot"/>
+
+        <addForeignKeyConstraint baseTableName="pitch_time"
+                                 baseColumnNames="pitch_id"
+                                 constraintName="fk_pitch_time_slot_pitch"
+                                 referencedTableName="pitch"
+                                 referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint baseTableName="pitch_time"
+                                 baseColumnNames="time_slot_id"
+                                 constraintName="fk_pitch_time_slot_time_slot"
+                                 referencedTableName="time_slot"
+                                 referencedColumnNames="id"/>
+
+        <createTable tableName="pitch_booking">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="create_at" type="timestamp"/>
+            <column name="update_at" type="timestamp"/>
+            <column name="status" type="varchar(45)"/>
+            <column name="user_id" type="bigint"/>
+            <column name="pitch_time_pitch_id" type="bigint"/>
+            <column name="pitch_time_time_slot_id" type="bigint"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="pitch_booking"
+                                 baseColumnNames="user_id"
+                                 constraintName="fk_user_pitch_booking"
+                                 referencedTableName="user"
+                                 referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint baseTableName="pitch_booking"
+                                 baseColumnNames="pitch_time_pitch_id"
+                                 constraintName="fk_pitch_pitch_booking"
+                                 referencedTableName="pitch"
+                                 referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint baseTableName="pitch_booking"
+                                 baseColumnNames="pitch_time_time_slot_id"
+                                 constraintName="fk_time_slot_pitch_booking"
+                                 referencedTableName="time_slot"
+                                 referencedColumnNames="id"/>
+
+        <createTable tableName="bill">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="create_at" type="date"/>
+            <column name="note" type="varchar(255)"/>
+            <column name="pitch_booking_id" type="bigint"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="bill"
+                                 baseColumnNames="pitch_booking_id"
+                                 constraintName="fk_bill_pitch_booking"
+                                 referencedTableName="pitch_booking"
+                                 referencedColumnNames="id"/>
+
+        <createTable tableName="comment">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="create_at" type="timestamp"/>
+            <column name="update_at" type="timestamp"/>
+            <column name="content" type="varchar(255)"/>
+            <column name="star" type="float"/>
+            <column name="user_id" type="bigint"/>
+            <column name="pitch_id" type="bigint"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="comment"
+                                 baseColumnNames="user_id"
+                                 constraintName="fk_user_comment"
+                                 referencedTableName="user"
+                                 referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint baseTableName="comment"
+                                 baseColumnNames="pitch_id"
+                                 constraintName="fk_pitch_comment"
+                                 referencedTableName="pitch"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="2" author="Minh Quan">
+
+        <modifyDataType tableName="bill" columnName="create_at" newDataType="TIMESTAMP"/>
+
+        <dropForeignKeyConstraint baseTableName="pitch_time" constraintName="fk_pitch_time_slot_pitch"/>
+        <addForeignKeyConstraint baseTableName="pitch_time"
+                                 baseColumnNames="pitch_id"
+                                 constraintName="fk_pitch_time_slot_pitch"
+                                 referencedTableName="pitch"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+        />
+
+        <dropForeignKeyConstraint baseTableName="pitch_booking" constraintName="fk_pitch_pitch_booking"/>
+        <addForeignKeyConstraint baseTableName="pitch_booking"
+                                 baseColumnNames="pitch_time_pitch_id"
+                                 constraintName="fk_pitch_pitch_booking"
+                                 referencedTableName="pitch"
+                                 referencedColumnNames="id"
+                                 onDelete="SET NULL"
+        />
+
+        <dropForeignKeyConstraint baseTableName="bill" constraintName="fk_bill_pitch_booking"/>
+        <addForeignKeyConstraint baseTableName="bill"
+                                 baseColumnNames="pitch_booking_id"
+                                 constraintName="fk_bill_pitch_booking"
+                                 referencedTableName="pitch_booking"
+                                 referencedColumnNames="id"
+                                 onDelete="SET NULL"
+        />
+
+        <dropForeignKeyConstraint baseTableName="comment" constraintName="fk_pitch_comment"/>
+        <addForeignKeyConstraint baseTableName="comment"
+                                 baseColumnNames="pitch_id"
+                                 constraintName="fk_pitch_comment"
+                                 referencedTableName="pitch"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+        />
+    </changeSet>
+
+    <changeSet id="3" author="Phuc">
+        <addColumn tableName="pitch_booking">
+            <column name="note" type="varchar(255)"></column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="4" author="Minh Quan">
+        <dropForeignKeyConstraint baseTableName="pitch_booking" constraintName="fk_pitch_pitch_booking"/>
+        <addForeignKeyConstraint baseTableName="pitch_booking"
+                                 baseColumnNames="pitch_time_pitch_id"
+                                 constraintName="fk_pitch_pitch_booking"
+                                 referencedTableName="pitch"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+        />
+
+        <dropForeignKeyConstraint baseTableName="bill" constraintName="fk_bill_pitch_booking"/>
+        <addForeignKeyConstraint baseTableName="bill"
+                                 baseColumnNames="pitch_booking_id"
+                                 constraintName="fk_bill_pitch_booking"
+                                 referencedTableName="pitch_booking"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+        />
+    </changeSet>
+
+    <changeSet id="5" author="Minh Quân">
+        <dropForeignKeyConstraint baseTableName="pitch_time" constraintName="fk_pitch_time_slot_pitch"/>
+        <addForeignKeyConstraint baseTableName="pitch_time"
+                                 baseColumnNames="pitch_id"
+                                 constraintName="fk_pitch_time_slot_pitch"
+                                 referencedTableName="pitch"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+    </changeSet>
+
+</databaseChangeLog>

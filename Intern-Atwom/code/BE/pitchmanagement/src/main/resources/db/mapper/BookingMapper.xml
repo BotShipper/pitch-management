@@ -1,0 +1,206 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pitchmanagement.dao.BookingDAO">
+
+    <select id="selectById" parameterType="int"  resultType="com.pitchmanagement.dto.PitchBookingDTO">
+       SELECT  pb.id,
+                pb.create_at as createAt,
+                pb.update_at as updateAt,
+                pb.status,
+                pb.note,
+                pb.user_id as userId,
+                pt.price,
+                pt.pitch_id as pitchId,
+                pt.time_slot_id as timeSlotId,
+                p.name  as pitchName,
+                p.address,
+                pt1.name as type,
+                ts.start_time as startTime,
+                ts.end_time as endTime
+                FROM pitch_booking pb
+                    join pitch_time pt on pb.pitch_time_pitch_id = pt.pitch_id and pb.pitch_time_time_slot_id = pt.time_slot_id
+                    Join pitch p on p.id = pb.pitch_time_pitch_id
+                    join pitch_type pt1 on p.pitch_type_id = pt1.id
+                    join time_slot ts on pt.time_slot_id = ts.id
+        where pb.id  = #{id}
+    </select>
+
+    <select id="selectByUserAndPitchAndTime" parameterType="map" resultType="com.pitchmanagement.dto.PitchBookingDTO">
+        SELECT  pb.id,
+                pb.create_at as createAt,
+                pb.update_at as updateAt,
+                pb.status,
+                pb.note,
+                pb.user_id as userId,
+                pt.price,
+                pt.pitch_id as pitchId,
+                pt.time_slot_id as timeSlotId,
+                p.name  as pitchName,
+                p.address,
+                pt1.name as type,
+                ts.start_time as startTime,
+                ts.end_time as endTime
+                FROM pitch_booking pb
+                    join pitch_time pt on pb.pitch_time_pitch_id = pt.pitch_id and pb.pitch_time_time_slot_id = pt.time_slot_id
+                    Join pitch p on p.id = pb.pitch_time_pitch_id
+                    join pitch_type pt1 on p.pitch_type_id = pt1.id
+                    join time_slot ts on pt.time_slot_id = ts.id
+        where pb.user_id = #{user_id} AND pt.pitch_id = ${pitch_id} AND pt.time_slot_id = #{time_slot_id} and pb.status = "wait"
+    </select>
+    
+
+    <select id ="SelectByUser" parameterType="map" resultType="com.pitchmanagement.dto.PitchBookingDTO">
+        SELECT  pb.id,
+        pb.create_at as createAt,
+        pb.update_at as updateAt,
+        pb.status,
+        pb.note,
+        pb.user_id as userId,
+        pt.price,
+        pt.pitch_id as pitchId,
+        pt.time_slot_id as timeSlotId,
+        p.name as pitchName,
+        p.address,
+        pt1.name as type,
+        ts.start_time as startTime,
+        ts.end_time as endTime
+            FROM pitch_booking pb
+                join pitch_time pt on pb.pitch_time_pitch_id = pt.pitch_id and pb.pitch_time_time_slot_id = pt.time_slot_id
+                Join pitch p on p.id = pb.pitch_time_pitch_id
+                join pitch_type pt1 on p.pitch_type_id = pt1.id
+                join time_slot ts on pt.time_slot_id = ts.id
+            where pb.user_id = #{user_id} and pb.status like #{status}
+            <choose>
+                <when test="order == 'DESC'">
+                    ORDER by pb.create_at DESC
+                </when>
+                <otherwise>
+                    ORDER by pb.create_at ASC
+                </otherwise>
+            </choose>
+    </select>
+
+    <select id="total" parameterType="map" resultType="int">
+        Select COUNT(id) from pitch_booking where user_id = #{user_id} and status like #{status} group by user_id
+    </select>
+
+    <insert id = "insert" useGeneratedKeys="true" parameterType = "com.pitchmanagement.model.request.BookingRequest" >
+        insert into pitch_booking 
+                (status,
+                note,
+                create_at,
+                update_at,
+                pitch_time_pitch_id,
+                pitch_time_time_slot_id,
+                user_id) 
+        value(#{status},#{note},#{createAt},#{updateAt},#{pitchId},#{timeSlotId},#{userId}) 
+    </insert>
+    <update id = "update" parameterType = "com.pitchmanagement.model.request.BookingRequest">
+        UPDATE pitch_booking
+            SET
+            update_at = #{updateAt},
+            status = #{status},
+            note = #{note},
+            pitch_time_pitch_id = #{pitchId},
+            pitch_time_time_slot_id = #{timeSlotId}
+            WHERE id = #{id}
+    </update>
+
+    <update id="RejectAllPitch" parameterType="map">
+        UPDATE pitch_booking
+            SET
+            update_at = now(),
+            status = "reject"
+            WHERE pitch_time_pitch_id = #{pitch_id} and pitch_time_time_slot_id = #{time_slot_id} and status = "wait"
+    </update>
+
+    <!-- ........................................................... -->
+    <update id="updateStatusPitchBooking" parameterType="map">
+        UPDATE pitch_booking
+        SET `status` = #{status}, `update_at` = #{updateAt}
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectPitchBookingById" parameterType="int" resultMap="result">
+        SELECT *
+        FROM pitch_booking
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectConfirmPitchBookingByStatus" parameterType="map" resultMap="adminResult">
+        SELECT pb.id, pb.create_at, pb.`status` AS status_book, pb.note,
+        p.name AS name_pitch, p.address,
+        u.email, u.fullname, u.phone_number,
+        ts.start_time, ts.end_time,
+        pt.price,
+        b.create_at AS create_bill, b.note AS note_bill
+        FROM pitch_booking pb
+        LEFT JOIN pitch p ON p.id = pb.pitch_time_pitch_id
+        INNER JOIN time_slot ts ON pb.pitch_time_time_slot_id = ts.id
+        INNER JOIN user u ON pb.user_id = u.id
+        LEFT JOIN pitch_time pt ON p.id = pt.pitch_id AND ts.id = pt.time_slot_id
+        LEFT JOIN bill b ON b.pitch_booking_id = pb.id
+        WHERE pb.status IN
+        <foreach item="status" collection="statuses" open="(" separator="," close=")">
+            #{status}
+        </foreach>
+        AND (#{namePitch} IS NULL OR p.name LIKE CONCAT('%', #{namePitch}, '%'))
+        ORDER BY pb.status ASC , b.create_at DESC
+    </select>
+
+    <select id="selectConfirmPitchBookingById" parameterType="int" resultMap="adminResult">
+        SELECT pb.id, pb.create_at, pb.`status` AS status_book, pb.note,
+        p.name AS name_pitch, p.address,
+        u.email, u.fullname, u.phone_number,
+        ts.start_time, ts.end_time,
+        pt.price,
+        b.create_at AS create_bill, b.note AS note_bill
+        FROM pitch_booking pb
+        LEFT JOIN pitch p ON p.id = pb.pitch_time_pitch_id
+        INNER JOIN time_slot ts ON pb.pitch_time_time_slot_id = ts.id
+        INNER JOIN user u ON pb.user_id = u.id
+        LEFT JOIN pitch_time pt ON p.id = pt.pitch_id AND ts.id = pt.time_slot_id
+        LEFT JOIN bill b ON b.pitch_booking_id = pb.id
+        WHERE pb.id = #{id}
+    </select>
+    
+    <select id="updatePitchBookingToReject" parameterType="map">
+        UPDATE `pitch_booking`
+        SET `status` = "reject"
+        WHERE pitch_time_pitch_id = #{pitchTimePitchId}
+        AND pitch_time_time_slot_id = #{pitchTimeTimeSlotId}
+        AND DATE(create_at) = #{createAt}
+        AND `status` = "wait"
+    </select>
+
+    <resultMap id="adminResult" type="com.pitchmanagement.dto.admin.ConfirmPitchBookingDto">
+        <result property="id" column="id"/>
+        <result property="create_at" column="createAt"/>
+        <result property="status_book" column="statusBook"/>
+        <result property="note" column="note"/>
+        <result property="name_pitch" column="namePitch"/>
+        <result property="address" column="address"/>
+        <result property="email" column="email"/>
+        <result property="fullname" column="fullname"/>
+        <result property="phone_number" column="phoneNumber"/>
+        <result property="start_time" column="startTime"/>
+        <result property="end_time" column="endTime"/>
+        <result property="price" column="price"/>
+        <result property="create_bill" column="createBill"/>
+        <result property="note_bill" column="noteBill"/>
+    </resultMap>
+
+    <resultMap id="result" type="com.pitchmanagement.dto.admin.BookingDto">
+        <result property="id" column="id"/>
+        <result property="create_at" column="createAt"/>
+        <result property="update_at" column="updateAt"/>
+        <result property="status" column="status"/>
+        <result property="user_id" column="userId"/>
+        <result property="pitch_time_pitch_id" column="pitchTimePitchId"/>
+        <result property="pitch_time_time_slot_id" column="pitchTimeTimeSlotId"/>
+        <result property="note" column="note"/>
+    </resultMap>
+
+    <!-- ........................................................... -->
+</mapper>

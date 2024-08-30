@@ -1,0 +1,153 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.hide {
+  display: none !important;
+}
+
+.center {
+  text-align: center;
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+input[type="radio"] {
+  display: none;
+}
+
+.star {
+  cursor: pointer;
+}
+
+button {
+  border-radius: 10px !important;
+}
+
+a {
+  text-decoration: none !important;
+}
+
+.swal2-container {
+  z-index: 10000;
+}
+
+.image-container {
+  position: relative;
+  display: inline-block;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  /* Màu nền lớp mờ */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  cursor: pointer;
+}
+
+.icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-icon {
+  font-size: 2rem;
+  /* Kích thước của icon */
+  color: rgba(255, 255, 255, 0.9);
+  /* Màu sắc của icon */
+}
+
+.image-container:hover .overlay {
+  opacity: 1;
+  /* Hiển thị lớp mờ và icon khi hover */
+}
+
+.separator {
+  width: 3px;
+  height: 50vh;
+  border: none;
+  border-left: 3px solid #000;
+  margin: 0 20px;
+}
+
+@media (max-width: 768px) {
+  .separator {
+    width: 2px;
+    /* Đặt lại độ rộng của thanh phân cách cho màn hình nhỏ hơn */
+    height: 30vh;
+    /* Đặt lại chiều cao cho màn hình nhỏ hơn */
+    margin: 0 10px;
+    /* Đặt lại khoảng cách bên trái và bên phải */
+  }
+}
+
+@media (max-width: 480px) {
+  .separator {
+    width: 1px;
+    /* Đặt lại độ rộng của thanh phân cách cho màn hình rất nhỏ */
+    height: 20vh;
+    /* Đặt lại chiều cao cho màn hình rất nhỏ */
+    margin: 0 5px;
+    /* Đặt lại khoảng cách bên trái và bên phải */
+  }
+}
+
+.swal2-popup {
+  z-index: 1050 !important; /* Giá trị z-index tùy chỉnh */
+}
+
+.custom-rating .p-rating-star {
+  color: #ffbf00; 
+}
+
+.custom-rating .p-rating-icon {
+  color: #ffbf00; 
+}
+
+.p-dropdown-items,
+.p-menu-list {
+  padding: 0;
+}
